@@ -1,2 +1,0 @@
-# Save as /etc/sudoers.d/zabbix-smart-raid
-zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/proxmox_raid_pd_attr.sh

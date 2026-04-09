@@ -1,0 +1,2 @@
+zabbix ALL=(root) NOPASSWD: /usr/local/bin/proxmox_raid_pd_attr.sh
+Defaults!/usr/local/bin/proxmox_raid_pd_attr.sh !requiretty

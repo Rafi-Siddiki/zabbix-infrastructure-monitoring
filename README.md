@@ -175,9 +175,10 @@ So this project was not simply "generate a template and import it". It was a str
 These templates monitor out-of-band or appliance hardware through SNMP:
 
 - Dell PowerEdge R720 / iDRAC
+- Dell PowerEdge R740
 - HPE ProLiant DL380
 - IBM IMM
-- Lenovo XCC
+- Lenovo XCC SR650
 - Synology NAS
 
 ### 2. Agent-based monitoring for Proxmox RAID disks
@@ -228,12 +229,13 @@ zabbix-hardware-monitoring/
 │       └── Synology NAS SNMP.yaml
 ├── scripts/
 │   └── proxmox/
-│       └── proxmox_raid_pd_attr.sh.example
+│       └── proxmox_raid_pd_attr.sh.
 ├── configs/
 │   └── zabbix-agent2/
-│       └── proxmox-raid-smart.conf.example
+│       └── proxmox-raid-smart.conf
+│       └── zabbix_agent2.conf
 └── sudoers/
-    └── zabbix-smart-raid.example
+    └── zabbix-smart-raid
 ```
 
 ---
@@ -251,6 +253,29 @@ zabbix-hardware-monitoring/
 | Proxmox RAID SMART | Agent2 + smartctl | MegaRAID disk discovery, HDD health, SSD wear, dynamic disk status |
 
 ---
+
+### Get Zabbix Up and running
+
+```bash
+git clone https://github.com/Rafi-Siddiki/zabbix-infrastructure-monitoring.git
+```
+```bash
+git cd /zabbix-infrastructure-monitoring/docker/
+```
+```bash
+git docker compose up -d
+```
+
+#### Log into zabbix using
+
+Username :
+```bash
+Admin
+```
+Password: 
+```bash
+zabbix
+```
 
 ## Key design decisions
 
