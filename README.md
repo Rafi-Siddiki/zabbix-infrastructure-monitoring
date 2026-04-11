@@ -377,10 +377,10 @@ sudo nano /etc/zabbix/zabbix_agent2.d/proxmox-raid-smart.conf
 /usr/local/bin/proxmox_raid_pd_attr.sh discover /dev/sda
 ```
 ```bash
-sudo zabbix_agent2 -t raid.pd.discovery
+sudo zabbix_agent2 -t proxmox.raid.pd.discovery
 ```
 ```bash
-sudo zabbix_agent2 -t 'raid.pd.wear[0]'
+sudo zabbix_agent2 -t 'proxmox.raid.pd.wear[0]'
 ```
 
 ### Restart and verify
