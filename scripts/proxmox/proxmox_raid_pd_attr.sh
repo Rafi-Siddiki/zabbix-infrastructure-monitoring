@@ -52,44 +52,80 @@ get_health_raw() {
 
 get_wear_pct() {
     awk '
-        /Wear_Leveling_Count/ {
-            print $4; found=1; exit
+        # Prefer Intel/Lenovo SMART ID 233 if present
+        /^[[:space:]]*233[[:space:]]+Media_Wearout_Indicator([[:space:]]|$)/ {
+            v = $4
+            gsub(/^0+/, "", v)
+            if (v == "") v = 0
+            print v
+            found233 = 1
+            exit
         }
-        /Media_Wearout_Indicator/ {
-            print $4; found=1; exit
+
+        # Save ID 177 only as fallback, do NOT exit yet
+        /^[[:space:]]*177[[:space:]]+Wear_Leveling_Count([[:space:]]|$)/ {
+            if (!have177) {
+                v177 = $4
+                gsub(/^0+/, "", v177)
+                if (v177 == "") v177 = 0
+                have177 = 1
+            }
         }
+
+        # NVMe style: Percentage Used: 2%
         /Percentage Used:/ {
-            for (i=1; i<=NF; i++) {
-                if ($i ~ /^[0-9]+$/) {
-                    print 100 - $i;
-                    found=1;
-                    exit
+            for (i = 1; i <= NF; i++) {
+                if ($i ~ /^[0-9]+%?$/) {
+                    v = $i
+                    gsub(/%/, "", v)
+                    used = v + 0
+                    have_nvme = 1
+                    break
                 }
             }
         }
-        END { if (!found) print "" }'
-}
 
+        END {
+            if (found233) exit
+            if (have177) {
+                print v177
+                exit
+            }
+            if (have_nvme) {
+                print 100 - used
+                exit
+            }
+            print ""
+        }'
+}
 get_dynamic_status() {
     local out="$1"
+    # NEW: If probe is empty, return 0 immediately (Not Found)
+    if [ -z "$out" ]; then echo 0; return; fi
+
     local dtype health pct
     dtype="$(printf '%s\n' "$out" | get_type)"
+    
     if [ "$dtype" = "SSD" ]; then
         pct="$(printf '%s\n' "$out" | get_wear_pct)"
         if [ -z "$pct" ]; then echo 0; return; fi
-        if [ "$pct" -lt 30 ]; then echo 5; return; fi
-        if [ "$pct" -lt 40 ]; then echo 3; return; fi
+        # Ensure we treat as number and remove leading zeros to avoid octal errors
+        pct_num=$(echo "$pct" | sed 's/^0*//')
+        [ -z "$pct_num" ] && pct_num=0
+        
+        if [ "$pct_num" -lt 30 ]; then echo 5; return; fi
+        if [ "$pct_num" -lt 40 ]; then echo 3; return; fi
         echo 1; return
     fi
 
     health="$(printf '%s\n' "$out" | get_health_raw | tr '[:upper:]' '[:lower:]')"
     case "$health" in
-        "" ) echo 0 ;;
         passed|ok|normal ) echo 1 ;;
         *degrad*|*warn*|*pre-fail*|*prefail*|*suspect* ) echo 3 ;;
         * ) echo 5 ;;
     esac
 }
+
 
 case "$MODE" in
     discover)
